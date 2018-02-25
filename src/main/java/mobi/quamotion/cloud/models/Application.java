@@ -1,4 +1,4 @@
-package models;
+package mobi.quamotion.cloud.models;
 
 /**
  * Created by BartSaintGermain on 2/23/2018.

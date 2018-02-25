@@ -1,7 +1,6 @@
-package models;
+package mobi.quamotion.cloud.models;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by BartSaintGermain on 2/22/2018.

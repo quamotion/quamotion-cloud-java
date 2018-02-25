@@ -1,27 +1,23 @@
-package models;
+package mobi.quamotion.cloud.models;
 
 import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by BartSaintGermain on 2/23/2018.
  */
-public class DeviceGroup
+public class DeviceSelection
 {
-    @SerializedName("deviceGroupId")
-    public UUID deviceGroupId;
-
-    @SerializedName("name")
-    public String Name;
+    @SerializedName("deviceSelectionId")
+    public String DeviceSelectionId;
 
     @SerializedName("displayName")
     public String DisplayName;
 
-    @SerializedName("devices")
-    public List<DeviceSelection> Devices;
+    @SerializedName("tags")
+    public List<String> Tags;
 
     @SerializedName("variables")
     public HashMap<String, String> Variables;

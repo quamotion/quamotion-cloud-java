@@ -1,5 +1,7 @@
+package mobi.quamotion.cloud;
+
 import com.google.gson.Gson;
-import models.*;
+import mobi.quamotion.cloud.models.*;
 import okhttp3.*;
 
 import java.io.File;
@@ -40,6 +42,11 @@ public class QMCloudClient
         String response = this.postFormRequest("/api/login", loginData);
         LoginResponse loginResponse = gson.fromJson(response, LoginResponse.class);
         this.accessToken = loginResponse.accessToken;
+    }
+
+    public boolean isConnected()
+    {
+        return this.accessToken != null;
     }
 
     public List<Tenant> getProjects() throws IOException {

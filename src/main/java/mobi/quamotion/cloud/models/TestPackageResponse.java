@@ -1,4 +1,4 @@
-package models;
+package mobi.quamotion.cloud.models;
 
 import java.util.ArrayList;
 
