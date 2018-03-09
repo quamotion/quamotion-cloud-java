@@ -36,6 +36,13 @@ public class QMCloudClient
     {
     }
 
+    public String getHost()
+    {
+        return this.host;
+    }
+
+    public String getAccessToken() { return this.accessToken; };
+
     public void login(String apiKey) throws IOException {
         HashMap<String, String> loginData = new HashMap<String, String>();
         loginData.put("ApiKey", apiKey);
@@ -54,14 +61,38 @@ public class QMCloudClient
         return this.gson.fromJson(response, ProjectResponse.class);
     }
 
-    public List<TestPackage> publishTestPackage(Tenant tenant, String filePath) throws IOException {
+    public TestPackage publishTestPackage(Tenant tenant, String filePath) throws IOException {
         String response = this.sendFile("/project/"+ tenant.name + "/api/testPackage", filePath);
-        return this.gson.fromJson(response, TestPackageResponse.class);
+        TestPackageResponse testPackages = this.gson.fromJson(response, TestPackageResponse.class);
+        if(testPackages.size() == 0)
+        {
+            throw new IllegalStateException("No test package was added for: " + filePath);
+        }
+
+        if(testPackages.size() > 1)
+        {
+            throw new IllegalStateException("More than one test package were added for: " + filePath);
+        }
+
+        return testPackages.get(0);
     }
 
-    public List<Application> publishApplication(Tenant tenant, String filePath) throws IOException {
+    public Application publishApplication(Tenant tenant, String filePath) throws IOException {
         String response = this.sendFile("/project/"+ tenant.name + "/api/app", filePath);
-        return this.gson.fromJson(response, ApplicationResponse.class);
+
+        List<Application> applications = this.gson.fromJson(response, ApplicationResponse.class);
+
+        if(applications.size() == 0)
+        {
+            throw new IllegalStateException("No application was added for: " + filePath);
+        }
+
+        if(applications.size() > 1)
+        {
+            throw new IllegalStateException("More than one application were added for: " + filePath);
+        }
+
+        return applications.get(0);
     }
 
     public List<Application> getApplications(Tenant tenant) throws IOException {
@@ -121,10 +152,10 @@ public class QMCloudClient
         return result;
     }
 
-    public TestRun scheduleTestRun(Tenant tenant, TestPackage testPackage, Application application, DeviceGroup deviceGroup) throws IOException {
+    public TestRun scheduleTestRun(Tenant tenant, TestPackage testPackage, Application application, String deviceGroupId) throws IOException {
         CreateTestRunRequest createTestRunRequest = new CreateTestRunRequest();
         createTestRunRequest.app = application;
-        createTestRunRequest.deviceGroupId = deviceGroup.deviceGroupId.toString();
+        createTestRunRequest.deviceGroupId = deviceGroupId;
         createTestRunRequest.schedule ="";
         createTestRunRequest.testPackage = testPackage;
         createTestRunRequest.testScriptEnvironmentVariables = new HashMap<String, String>();
@@ -135,13 +166,38 @@ public class QMCloudClient
         return this.gson.fromJson(response, TestRun.class);
     }
 
-    public ArrayList<TestJob> getTestJobs(Tenant tenant, TestRun testRun)throws IOException {
-        String response = this.getRequest("/project/"+ tenant.name +"/api/testRun/"+ testRun.testRunId +"/jobs");
+    public TestRun scheduleTestRun(Tenant tenant, TestPackage testPackage, Application application, DeviceGroup deviceGroup) throws IOException {
+        return this.scheduleTestRun(tenant, testPackage, application, deviceGroup.deviceGroupId.toString());
+    }
+
+    public TestRun getTestRun(Tenant tenant, String testRunId) throws IOException {
+        String response = this.getRequest("/project/"+ tenant.name +"/api/testRun");
+        ArrayList<TestRun> testRuns = this.gson.fromJson(response, TestRunResponse.class);
+
+        TestRun testRun = null;
+        for(TestRun tr : testRuns)
+        {
+            if(tr.getTestRunId().toString().equals(testRunId))
+            {
+                testRun = tr;
+            }
+        }
+
+        return testRun;
+    }
+
+    public ArrayList<TestJob> getTestJobs(Tenant tenant, TestRun testRun) throws IOException {
+        String response = this.getRequest("/project/"+ tenant.name +"/api/testRun/"+ testRun.getTestRunId() +"/jobs");
         return this.gson.fromJson(response, TestJobResponse.class);
     }
 
-    public String getJobLogLive(Tenant tenant, TestJob testJob)throws IOException {
-        return this.getRequest("/project/"+ tenant.name +"/api/job/"+ testJob.id +"/log/live");
+    public TestJob getTestJob(Tenant tenant, int jobId)throws IOException {
+        String response = this.getRequest("/project/"+ tenant.name +"/api/job/"+ jobId);
+        return this.gson.fromJson(response, TestJob.class);
+    }
+
+    public String getJobLog(Tenant tenant, TestJob testJob)throws IOException {
+        return this.getRequest("/project/"+ tenant.name +"/api/job/"+ testJob.getId() +"/log");
     }
 
     private void ensureLogin()
